@@ -127,7 +127,7 @@ export async function exportMapToPdf(opts: {
   }
   console.log("export:cardTypes", cardTypeCounts);
 
-  console.log("export:geometry", {
+  console.log("export:geometry", JSON.stringify({
     boundsW: bounds.width,
     boundsH: bounds.height,
     aspect,
@@ -139,7 +139,7 @@ export async function exportMapToPdf(opts: {
     zoom,
     x,
     y,
-  });
+  }));
 
   const isExportingCount = document.querySelectorAll(".is-exporting").length;
   let hasExportingAncestor = false;
@@ -163,7 +163,15 @@ export async function exportMapToPdf(opts: {
     }
   }
 
-  console.log("export:dataUrl", { prefix: dataUrl?.slice(0, 40), length: dataUrl?.length });
+  console.log("export:dataUrl", JSON.stringify({ prefix: dataUrl?.slice(0, 40), length: dataUrl?.length }));
+
+  // Save the intermediate PNG so we can confirm whether the capture is blank or not.
+  try {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `${formatFilename(mapName)}-capture.png`;
+    a.click();
+  } catch { /* ignore */ }
 
   // Guard against blank/invalid output.
   if (!dataUrl || dataUrl.length < 5000 || !dataUrl.startsWith("data:image/png")) {
