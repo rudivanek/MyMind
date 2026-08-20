@@ -118,6 +118,15 @@ export async function exportMapToPdf(opts: {
     },
   };
 
+  // Temporary diagnostic logging — card-type shapes (clip-path, evidence pseudo-element)
+  // are suspected of causing html-to-image to produce a blank canvas.
+  const cardTypeCounts: Record<string, number> = {};
+  for (const n of nodes) {
+    const ct = (n.data as Record<string, unknown> | undefined)?.cardType as string | undefined;
+    if (ct) cardTypeCounts[ct] = (cardTypeCounts[ct] ?? 0) + 1;
+  }
+  console.log("export:cardTypes", cardTypeCounts);
+
   let dataUrl: string;
   try {
     dataUrl = await toPng(viewportEl, captureOpts);
@@ -128,6 +137,8 @@ export async function exportMapToPdf(opts: {
       throw err2;
     }
   }
+
+  console.log("export:dataUrl", { prefix: dataUrl?.slice(0, 40), length: dataUrl?.length });
 
   // Guard against blank/invalid output.
   if (!dataUrl || dataUrl.length < 5000 || !dataUrl.startsWith("data:image/png")) {

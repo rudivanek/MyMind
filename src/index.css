@@ -176,6 +176,15 @@ button, input, textarea { font: inherit; }
 .is-exporting .item-node-resizer-line { display: none !important; }
 .is-exporting .react-flow__edge .edge-midpoint-delete { display: none !important; }
 
+/* Type silhouettes are simplified in PDF export because html-to-image cannot
+   reliably rasterise clip-path in the cloned DOM — it produces a blank canvas.
+   Neutralise clip-path on decision and risk cards, and hide the evidence
+   folded-corner pseudo-element. The accent bar, icon, border, and radius
+   remain, so types are still distinguishable in the export. */
+.is-exporting .card-type--decision { clip-path: none !important; }
+.is-exporting .card-type--risk { clip-path: none !important; }
+.is-exporting .card-type--evidence::after { display: none !important; }
+
 /* Card type shapes — survive export and focus dimming */
 .card-type--evidence::after {
   content: "";
