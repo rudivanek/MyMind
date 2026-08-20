@@ -165,13 +165,10 @@ export async function exportMapToPdf(opts: {
 
   console.log("export:dataUrl", JSON.stringify({ prefix: dataUrl?.slice(0, 40), length: dataUrl?.length }));
 
-  // Save the intermediate PNG so we can confirm whether the capture is blank or not.
-  try {
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `${formatFilename(mapName)}-capture.png`;
-    a.click();
-  } catch { /* ignore */ }
+  // TEMPORARY DEBUG: open the captured PNG in a new tab for visual inspection.
+  // Remove this along with the rest of the export diagnostics once the blank
+  // page bug is resolved.
+  try { window.open(dataUrl, "_blank"); } catch { /* ignore */ }
 
   // Guard against blank/invalid output.
   if (!dataUrl || dataUrl.length < 5000 || !dataUrl.startsWith("data:image/png")) {
