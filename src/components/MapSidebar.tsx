@@ -1214,7 +1214,7 @@ function MapSidebar() {
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2">
             <MapIcon size={16} className="text-slate-700" />
-            <span className="text-xs  tracking-wide text-slate-600">MAPS</span>
+            <span className="text-xs font-bold tracking-wide text-slate-700">MAPS</span>
             <span className="text-[14px] font-medium tracking-wide text-slate-400">V{__APP_VERSION__}</span>
           </div>
           <button
