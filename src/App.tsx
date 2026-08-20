@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, FileDown, FileJson, FileText, Grid3x3, LogOut, Network, Plus, Tags, Upload, X } from "lucide-react";
-import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
+import { ReactFlowProvider, useReactFlow, type Node, type Rect } from "@xyflow/react";
 import Canvas from "@/components/Canvas";
 import BurstInput from "@/components/BurstInput";
 import FitViewButton from "@/components/FitViewButton";
@@ -621,13 +621,28 @@ function App() {
     try {
       await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       const getMeasuredNodes = (window as unknown as { __mymindGetNodes?: () => unknown[] }).__mymindGetNodes;
-      const measuredNodes = (getMeasuredNodes?.() ?? []) as { id: string; position: { x: number; y: number }; measured?: { width?: number; height?: number }; width?: number; height?: number; data: Record<string, unknown> }[];
-      const nodes = measuredNodes.length > 0
+      const measuredNodes = (getMeasuredNodes?.() ?? []) as Node[];
+      const nodes: Node[] = measuredNodes.length > 0
         ? measuredNodes
-        : store.items.map((item) => ({ id: item.id, position: { x: item.posX, y: item.posY }, width: item.width ?? 240, height: item.height ?? 92, data: {} }));
+        : store.items.map((item) => ({ id: item.id, position: { x: item.posX, y: item.posY }, width: item.width ?? 240, height: item.height ?? 92, data: {} }) as Node);
+      const getHookBounds = (window as unknown as { __mymindGetNodesBounds?: (nodes: Node[]) => Rect }).__mymindGetNodesBounds;
+      const bounds: Rect = getHookBounds ? getHookBounds(nodes) : (() => {
+        // Fallback: compute bounds manually from node positions + measured/width.
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const n of nodes) {
+          const w = n.measured?.width ?? n.width ?? 240;
+          const h = n.measured?.height ?? n.height ?? 92;
+          minX = Math.min(minX, n.position.x);
+          minY = Math.min(minY, n.position.y);
+          maxX = Math.max(maxX, n.position.x + w);
+          maxY = Math.max(maxY, n.position.y + h);
+        }
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY } as Rect;
+      })();
       const mapName = store.maps.find((m) => m.id === store.activeMapId)?.name ?? "map";
       await exportMapToPdf({
         nodes,
+        bounds,
         mapName,
         includeAppendix,
         items: includeAppendix ? store.items : undefined,

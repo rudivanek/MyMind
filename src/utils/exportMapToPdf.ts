@@ -1,4 +1,4 @@
-import { getNodesBounds, getViewportForBounds, type Node } from "@xyflow/react";
+import { getViewportForBounds, getNodesBounds as standaloneGetNodesBounds, type Node, type Rect } from "@xyflow/react";
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 import type { Item, Connection } from "@/types";
@@ -29,16 +29,15 @@ function formatFilename(mapName: string): string {
 
 export async function exportMapToPdf(opts: {
   nodes: Node[];
+  bounds: Rect;
   mapName: string;
   includeAppendix?: boolean;
   items?: Item[];
   connections?: Connection[];
   readingOrder?: ReadingOrderEntry[];
 }): Promise<void> {
-  const { nodes, mapName, includeAppendix = false, items = [], connections = [], readingOrder = [] } = opts;
+  const { nodes, bounds, mapName, includeAppendix = false, items = [], connections = [], readingOrder = [] } = opts;
   if (nodes.length === 0) return;
-
-  const bounds = getNodesBounds(nodes);
 
   if (!isFiniteNumber(bounds.width) || !isFiniteNumber(bounds.height) || bounds.width <= 0 || bounds.height <= 0) {
     throw new Error(
@@ -140,6 +139,29 @@ export async function exportMapToPdf(opts: {
     x,
     y,
   }));
+
+  // Log the first 3 nodes so we can see whether they carry measurements.
+  const nodeSamples = nodes.slice(0, 3).map((n) => ({
+    id: n.id,
+    position: n.position,
+    measured: n.measured,
+    width: n.width,
+    height: n.height,
+  }));
+  console.log("export:nodes", JSON.stringify(nodeSamples));
+
+  // Compare the hook-provided bounds against the standalone function for one run.
+  // If they differ, that confirms the standalone getNodesBounds is the bug source.
+  try {
+    const standaloneBounds = standaloneGetNodesBounds(nodes);
+    console.log("export:boundsCompare", JSON.stringify({
+      hook: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
+      standalone: { x: standaloneBounds.x, y: standaloneBounds.y, width: standaloneBounds.width, height: standaloneBounds.height },
+      match: standaloneBounds.x === bounds.x && standaloneBounds.y === bounds.y && standaloneBounds.width === bounds.width && standaloneBounds.height === bounds.height,
+    }));
+  } catch (e) {
+    console.log("export:boundsCompare", "standalone getNodesBounds failed", e);
+  }
 
   const isExportingCount = document.querySelectorAll(".is-exporting").length;
   let hasExportingAncestor = false;

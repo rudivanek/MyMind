@@ -23,6 +23,7 @@ import {
   type Viewport,
   type OnReconnect,
   type EdgeMouseHandler,
+  type Rect,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ChevronRight, Copy, ClipboardCopy, Edit3, Palette, Trash2, Circle, CheckCircle2, HelpCircle, AlertCircle, X, Minus, Plus, Command, GitFork, CircleDot, AlertTriangle, FileText } from "lucide-react";
@@ -173,7 +174,7 @@ function Canvas() {
   const commitPillDrag = useBoardStore((s) => s.commitPillDrag);
   const tidy = useBoardStore((s) => s.tidy);
   const arrangeItems = useBoardStore((s) => s.arrangeItems);
-  const { screenToFlowPosition, flowToScreenPosition, getViewport, setViewport, fitView, getNodes } = useReactFlow();
+  const { screenToFlowPosition, flowToScreenPosition, getViewport, setViewport, fitView, getNodes, getNodesBounds } = useReactFlow();
 
   // Expose the measured React Flow nodes for PDF export, which needs
   // node.measured dimensions (not Zustand items, which lack them).
@@ -181,6 +182,14 @@ function Canvas() {
     (window as unknown as { __mymindGetNodes?: () => Node[] }).__mymindGetNodes = () => getNodes();
     return () => { delete (window as unknown as { __mymindGetNodes?: () => Node[] }).__mymindGetNodes; };
   }, [getNodes]);
+
+  // Expose the hook version of getNodesBounds for PDF export. The standalone
+  // import can return incorrect bounds for sub-flows, producing a wrong
+  // viewport transform and a blank capture.
+  useEffect(() => {
+    (window as unknown as { __mymindGetNodesBounds?: (nodes: Node[]) => Rect }).__mymindGetNodesBounds = (nodes: Node[]) => getNodesBounds(nodes);
+    return () => { delete (window as unknown as { __mymindGetNodesBounds?: (nodes: Node[]) => Rect }).__mymindGetNodesBounds; };
+  }, [getNodesBounds]);
   const zoom = useStore((s) => s.transform[2]);
   const [pendingComment, setPendingComment] = useState<PendingComment | null>(null);
   const [popupItemId, setPopupItemId] = useState<string | null>(null);
