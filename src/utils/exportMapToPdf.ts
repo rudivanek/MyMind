@@ -127,6 +127,31 @@ export async function exportMapToPdf(opts: {
   }
   console.log("export:cardTypes", cardTypeCounts);
 
+  console.log("export:geometry", {
+    boundsW: bounds.width,
+    boundsH: bounds.height,
+    aspect,
+    imageWidth,
+    imageHeight,
+    pixelRatio,
+    totalPixels: imageWidth * imageHeight * pixelRatio * pixelRatio,
+    nodeCount: nodes.length,
+    zoom,
+    x,
+    y,
+  });
+
+  const isExportingCount = document.querySelectorAll(".is-exporting").length;
+  let hasExportingAncestor = false;
+  {
+    let el: HTMLElement | null = viewportEl.parentElement;
+    while (el) {
+      if (el.classList?.contains("is-exporting")) { hasExportingAncestor = true; break; }
+      el = el.parentElement;
+    }
+  }
+  console.log("export:isExporting", { isExportingCount, hasExportingAncestor });
+
   let dataUrl: string;
   try {
     dataUrl = await toPng(viewportEl, captureOpts);
