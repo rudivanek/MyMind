@@ -88,6 +88,13 @@ function parseInline(text: string): InlineSegment[] {
 
 // ─── Rendering helpers ───
 
+// jsPDF's built-in Helvetica uses WinAnsi encoding, which has no glyphs for
+// arrows, bullets, box-drawing characters, or em dashes. Use only Latin-1
+// safe replacements throughout the appendix.
+
+const BODY_SIZE = 9.5;
+const BODY_LINE_HEIGHT = BODY_SIZE * 0.3528 * 1.35;
+
 function ensureSpace(pdf: jsPDF, cursor: Cursor, needed: number, bottomLimit: number, margin: number): void {
   if (cursor.y + needed > bottomLimit) {
     pdf.addPage();
@@ -122,7 +129,7 @@ function renderRichLine(
   margin: number,
   baseBold: boolean,
 ): void {
-  const lineHeight = fontSize * 0.3528 * 1.4;
+  const lineHeight = fontSize * 0.3528 * 1.35;
   const hasInline = /[*`]/.test(text) || /\[.+?\]\(/.test(text);
 
   if (!hasInline) {
@@ -242,6 +249,15 @@ function renderCodeBlock(
 
 // ─── Markdown body rendering ───
 
+function headingSizeForLevel(level: number): number {
+  switch (level) {
+    case 1: return 12;
+    case 2: return 11;
+    case 3: return 10;
+    default: return 9.5;
+  }
+}
+
 function renderMarkdownBody(
   pdf: jsPDF,
   text: string,
@@ -258,7 +274,7 @@ function renderMarkdownBody(
   const flushParagraph = () => {
     if (paragraphBuffer.length === 0) return;
     const paraText = paragraphBuffer.join(" ");
-    renderRichLine(pdf, paraText, x, cursor, colW, 10, bottomLimit, margin, false);
+    renderRichLine(pdf, paraText, x, cursor, colW, BODY_SIZE, bottomLimit, margin, false);
     paragraphBuffer = [];
   };
 
@@ -281,8 +297,10 @@ function renderMarkdownBody(
     if (headingMatch) {
       flushParagraph();
       const level = headingMatch[1].length;
-      const size = Math.max(14 - level, 10);
+      const size = headingSizeForLevel(level);
+      cursor.y += 3;
       renderRichLine(pdf, headingMatch[2], x, cursor, colW, size, bottomLimit, margin, true);
+      cursor.y += 1.5;
       continue;
     }
 
@@ -302,8 +320,8 @@ function renderMarkdownBody(
       const nestingLevel = Math.floor(taskMatch[1].length / 2);
       const checked = taskMatch[3] !== " ";
       const itemX = x + nestingLevel * 6;
-      const glyph = checked ? "\u2611" : "\u2610";
-      renderRichLine(pdf, `${glyph}  ${taskMatch[4]}`, itemX, cursor, colW - nestingLevel * 6, 10, bottomLimit, margin, false);
+      const box = checked ? "[x]" : "[ ]";
+      renderRichLine(pdf, `${box}  ${taskMatch[4]}`, itemX, cursor, colW - nestingLevel * 6, BODY_SIZE, bottomLimit, margin, false);
       continue;
     }
 
@@ -312,7 +330,7 @@ function renderMarkdownBody(
       flushParagraph();
       const nestingLevel = Math.floor(bulletMatch[1].length / 2);
       const itemX = x + nestingLevel * 6;
-      renderRichLine(pdf, `\u2022  ${bulletMatch[3]}`, itemX, cursor, colW - nestingLevel * 6, 10, bottomLimit, margin, false);
+      renderRichLine(pdf, `-  ${bulletMatch[3]}`, itemX, cursor, colW - nestingLevel * 6, BODY_SIZE, bottomLimit, margin, false);
       continue;
     }
 
@@ -321,7 +339,7 @@ function renderMarkdownBody(
       flushParagraph();
       const nestingLevel = Math.floor(orderedMatch[1].length / 2);
       const itemX = x + nestingLevel * 6;
-      renderRichLine(pdf, `${orderedMatch[2]}.  ${orderedMatch[3]}`, itemX, cursor, colW - nestingLevel * 6, 10, bottomLimit, margin, false);
+      renderRichLine(pdf, `${orderedMatch[2]}.  ${orderedMatch[3]}`, itemX, cursor, colW - nestingLevel * 6, BODY_SIZE, bottomLimit, margin, false);
       continue;
     }
 
@@ -330,7 +348,7 @@ function renderMarkdownBody(
       flushParagraph();
       const quoteX = x + 4;
       const startY = cursor.y;
-      renderRichLine(pdf, quoteMatch[2], quoteX, cursor, colW - 4, 10, bottomLimit, margin, false);
+      renderRichLine(pdf, quoteMatch[2], quoteX, cursor, colW - 4, BODY_SIZE, bottomLimit, margin, false);
       pdf.setDrawColor(203, 213, 225);
       pdf.setLineWidth(0.3);
       pdf.line(x + 1, startY + 1, x + 1, cursor.y - 1);
@@ -372,8 +390,8 @@ export function renderAppendix(
     const title = item.title || "Untitled";
     const cardType = item.cardType ?? "note";
     const typeLabel = cardType !== "note" ? `[${cardType.charAt(0).toUpperCase() + cardType.slice(1)}] ` : "";
-    const headingSize = 14;
-    const headingLineHeight = headingSize * 0.3528 * 1.4;
+    const headingSize = 13;
+    const headingLineHeight = headingSize * 0.3528 * 1.35;
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(headingSize);
@@ -395,8 +413,8 @@ export function renderAppendix(
     const cardConnections = connections.filter((c) => c.sourceId === item.id || c.targetId === item.id);
     if (cardConnections.length > 0) {
       cursor.y += 2;
-      const connSize = 8;
-      const connLineHeight = connSize * 0.3528 * 1.4;
+      const connSize = 8.5;
+      const connLineHeight = connSize * 0.3528 * 1.35;
 
       for (const conn of cardConnections) {
         const isOutgoing = conn.sourceId === item.id;
@@ -404,9 +422,9 @@ export function renderAppendix(
         const otherNumber = numberMap.get(otherId) ?? 0;
         const otherItem = items.find((it) => it.id === otherId);
         const otherTitle = otherItem?.title || "Untitled";
-        const arrow = isOutgoing ? "\u2192" : "\u2190";
+        const arrow = isOutgoing ? "->" : "<-";
         let line = `${arrow} ${otherNumber}. ${otherTitle}`;
-        if (conn.comment) line += ` \u2014 ${conn.comment}`;
+        if (conn.comment) line += ` - ${conn.comment}`;
 
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(connSize);
