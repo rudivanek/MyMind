@@ -1,6 +1,6 @@
 # MyMind Features
 
-Version: 15.0.0  
+Version: 16.0.0  
 Last Updated: 2026-08-20T00:00:00Z
 
 > **Note:** The canonical version number lives in `package.json` (`version` field). The value above is free text kept in sync manually; if the two disagree, `package.json` is the source of truth. The sidebar version tag is injected at build time from `package.json` via Vite's `define`.
