@@ -1,4 +1,4 @@
-import { getViewportForBounds, getNodesBounds as standaloneGetNodesBounds, type Node, type Rect } from "@xyflow/react";
+import { getViewportForBounds, type Node, type Rect } from "@xyflow/react";
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 import type { Item, Connection } from "@/types";
@@ -117,63 +117,6 @@ export async function exportMapToPdf(opts: {
     },
   };
 
-  // Temporary diagnostic logging — card-type shapes (clip-path, evidence pseudo-element)
-  // are suspected of causing html-to-image to produce a blank canvas.
-  const cardTypeCounts: Record<string, number> = {};
-  for (const n of nodes) {
-    const ct = (n.data as Record<string, unknown> | undefined)?.cardType as string | undefined;
-    if (ct) cardTypeCounts[ct] = (cardTypeCounts[ct] ?? 0) + 1;
-  }
-  console.log("export:cardTypes", cardTypeCounts);
-
-  console.log("export:geometry", JSON.stringify({
-    boundsW: bounds.width,
-    boundsH: bounds.height,
-    aspect,
-    imageWidth,
-    imageHeight,
-    pixelRatio,
-    totalPixels: imageWidth * imageHeight * pixelRatio * pixelRatio,
-    nodeCount: nodes.length,
-    zoom,
-    x,
-    y,
-  }));
-
-  // Log the first 3 nodes so we can see whether they carry measurements.
-  const nodeSamples = nodes.slice(0, 3).map((n) => ({
-    id: n.id,
-    position: n.position,
-    measured: n.measured,
-    width: n.width,
-    height: n.height,
-  }));
-  console.log("export:nodes", JSON.stringify(nodeSamples));
-
-  // Compare the hook-provided bounds against the standalone function for one run.
-  // If they differ, that confirms the standalone getNodesBounds is the bug source.
-  try {
-    const standaloneBounds = standaloneGetNodesBounds(nodes);
-    console.log("export:boundsCompare", JSON.stringify({
-      hook: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
-      standalone: { x: standaloneBounds.x, y: standaloneBounds.y, width: standaloneBounds.width, height: standaloneBounds.height },
-      match: standaloneBounds.x === bounds.x && standaloneBounds.y === bounds.y && standaloneBounds.width === bounds.width && standaloneBounds.height === bounds.height,
-    }));
-  } catch (e) {
-    console.log("export:boundsCompare", "standalone getNodesBounds failed", e);
-  }
-
-  const isExportingCount = document.querySelectorAll(".is-exporting").length;
-  let hasExportingAncestor = false;
-  {
-    let el: HTMLElement | null = viewportEl.parentElement;
-    while (el) {
-      if (el.classList?.contains("is-exporting")) { hasExportingAncestor = true; break; }
-      el = el.parentElement;
-    }
-  }
-  console.log("export:isExporting", { isExportingCount, hasExportingAncestor });
-
   let dataUrl: string;
   try {
     dataUrl = await toPng(viewportEl, captureOpts);
@@ -184,13 +127,6 @@ export async function exportMapToPdf(opts: {
       throw err2;
     }
   }
-
-  console.log("export:dataUrl", JSON.stringify({ prefix: dataUrl?.slice(0, 40), length: dataUrl?.length }));
-
-  // TEMPORARY DEBUG: open the captured PNG in a new tab for visual inspection.
-  // Remove this along with the rest of the export diagnostics once the blank
-  // page bug is resolved.
-  try { window.open(dataUrl, "_blank"); } catch { /* ignore */ }
 
   // Guard against blank/invalid output.
   if (!dataUrl || dataUrl.length < 5000 || !dataUrl.startsWith("data:image/png")) {
