@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --surface-1: #f8fafc; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; color: #0f172a; background: #f8fafc; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input, textarea { font: inherit; }
+.label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
+.field { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 10px; color: #334155; outline: none; transition: border-color .15s, box-shadow .15s; }
+.field:focus { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,.18); }
+.menu { display: flex; width: 100%; align-items: center; gap: 8px; border-radius: 8px; padding: 8px; text-align: left; font-size: 12px; color: #475569; }
+.menu:hover { background: #f1f5f9; }
+.react-flow__node { transition: opacity 160ms ease; cursor: default; }
+.card-drag-dot { position: absolute; top: 6px; left: 8px; z-index: 3; width: 14px; height: 14px; transform: none; border: 0; border-radius: 9999px; background: #cbd5e1; cursor: grab; transition: background-color 120ms ease, transform 120ms ease; }
+.card-drag-dot:hover { background: #64748b; transform: scale(1.08); }
+.card-drag-dot:active { cursor: grabbing; }
+.card-drag-dot:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+@keyframes creation-highlight { 0%, 100% { box-shadow: 0 0 0 4px rgba(99,102,241,.12), 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,.34), 0 0 24px rgba(99,102,241,.28), 0 4px 6px -1px rgba(0,0,0,.1); } }
+.creation-highlight { animation: creation-highlight 500ms ease-out; }
+.react-flow__edge path, .react-flow__edge-interaction { stroke: #64748b; stroke-width: 1.8; cursor: default; }
+.react-flow__edge-interaction { pointer-events: stroke; }
+.react-flow__edge svg, .react-flow__edge svg line, .react-flow__edge svg circle { pointer-events: none; }
+.react-flow__edgelabel-renderer { z-index: 10 !important; }
+.react-flow__controls { z-index: 20; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(15,23,42,.08); }
+.react-flow__controls-button { border-bottom: 1px solid #e2e8f0; background: rgba(255,255,255,.94); }
+.react-flow__controls-button:hover { background: #f1f5f9; }
+.react-flow__minimap { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(15,23,42,.08); }
+
+.card-markdown-preview {
+  overflow: hidden;
+  font-size: calc(12px * var(--card-scale, 1));
+  line-height: calc(1.25 * var(--card-scale, 1));
+}
+.card-markdown-preview h1,
+.card-markdown-preview h2,
+.card-markdown-preview h3,
+.card-markdown-preview h4,
+.card-markdown-preview h5,
+.card-markdown-preview h6 { margin: 0 0 calc(2px * var(--card-scale, 1)); border: 0; font-weight: 600; line-height: calc(1.2 * var(--card-scale, 1)); }
+.card-markdown-preview h1 { font-size: calc(14px * var(--card-scale, 1)); }
+.card-markdown-preview h2 { font-size: calc(13px * var(--card-scale, 1)); }
+.card-markdown-preview h3,
+.card-markdown-preview h4,
+.card-markdown-preview h5,
+.card-markdown-preview h6 { font-size: calc(12px * var(--card-scale, 1)); }
+.card-markdown-preview p { margin: 0 0 calc(4px * var(--card-scale, 1)); font-size: calc(12px * var(--card-scale, 1)); }
+.card-markdown-preview ul,
+.card-markdown-preview ol,
+.md-render ul,
+.md-render ol { margin: 0 0 calc(4px * var(--card-scale, 1)); padding-left: calc(1.25em * var(--card-scale, 1)); font-size: calc(12px * var(--card-scale, 1)); }
+.card-markdown-preview ul,
+.md-render ul { list-style: disc outside; }
+.card-markdown-preview ol,
+.md-render ol { list-style: decimal outside; }
+.card-markdown-preview ul ul,
+.md-render ul ul { list-style: circle outside; }
+.card-markdown-preview ul ul ul,
+.md-render ul ul ul { list-style: square outside; }
+.card-markdown-preview li,
+.md-render li { margin: 0; padding: 0; }
+.card-markdown-preview li.task-list-item,
+.md-render li.task-list-item { list-style: none; }
+.card-markdown-preview code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: calc(11px * var(--card-scale, 1)); }
+.card-markdown-preview pre { overflow: hidden; margin: 0 0 calc(4px * var(--card-scale, 1)); }
+
+.card-handle {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  border-radius: 9999px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #6366f1 !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.18) !important;
+  cursor: crosshair !important;
+  opacity: 0;
+  transition: opacity 150ms ease, transform 150ms ease;
+  pointer-events: all;
+  z-index: 1;
+}
+.card-handle::before,
+.card-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 1.5px;
+  margin: -0.75px 0 0 -3px;
+  background: #6366f1;
+  pointer-events: none;
+}
+.card-handle::after { transform: rotate(90deg); }
+
+.card-handle--top { top: -7px !important; left: 50% !important; transform: translateX(-50%); }
+.card-handle--bottom { bottom: -7px !important; left: 50% !important; transform: translateX(-50%); }
+.card-handle--left { left: -7px !important; top: 50% !important; transform: translateY(-50%); }
+.card-handle--right { right: -7px !important; top: 50% !important; transform: translateY(-50%); }
+
+.card-handle--top:hover { transform: translateX(-50%) scale(1.15); }
+.card-handle--bottom:hover { transform: translateX(-50%) scale(1.15); }
+.card-handle--left:hover { transform: translateY(-50%) scale(1.15); }
+.card-handle--right:hover { transform: translateY(-50%) scale(1.15); }
+
+.react-flow__node:hover .card-handle,
+.react-flow__node.selected .card-handle,
+.react-flow__node.is-connecting .card-handle {
+  opacity: 1;
+}
+
+.card-handle--ghost {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  cursor: crosshair !important;
+  pointer-events: all;
+  z-index: 2;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.card-handle--ghost::before,
+.card-handle--ghost::after { display: none; }
+
+.edge-midpoint-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1);
+  transition: opacity 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+  z-index: 5;
+}
+.edge-midpoint-delete--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.edge-midpoint-delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: scale(1.1);
+}
+
+.item-node-resizer-line.top,
+.item-node-resizer-line.left,
+.item-node-resizer-line.bottom.left,
+.item-node-resizer-handle.top,
+.item-node-resizer-handle.left,
+.item-node-resizer-handle.bottom.left { display: none !important; }
+.item-node-resizer-line.bottom { border-bottom-width: 2px; }
+.item-node-resizer-handle.bottom,
+.item-node-resizer-handle.right { border-radius: 999px; background: #6366f1; border: 0; }
+.item-node-resizer-handle.bottom { width: 36px !important; height: 8px !important; bottom: -4px; }
+.item-node-resizer-handle.right { width: 8px !important; height: 36px !important; right: -4px; }
+.item-node-resizer-handle.bottom.right { width: 12px !important; height: 12px !important; right: -6px; bottom: -6px; }
+
+.is-exporting .card-drag-dot { display: none !important; }
+.is-exporting .react-flow__node.selected { ring: 0 !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1) !important; }
+.is-exporting .react-flow__node.selected > div { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1) !important; }
+.is-exporting .item-node-resizer-handle,
+.is-exporting .item-node-resizer-line { display: none !important; }
+.is-exporting .react-flow__edge .edge-midpoint-delete { display: none !important; }
+
+/* Type silhouettes are simplified in PDF export because html-to-image cannot
+   reliably rasterise clip-path in the cloned DOM — it produces a blank canvas.
+   Neutralise clip-path on decision and risk cards, and hide the evidence
+   folded-corner pseudo-element. The accent bar, icon, border, and radius
+   remain, so types are still distinguishable in the export. */
+.is-exporting .card-type--decision { clip-path: none !important; }
+.is-exporting .card-type--risk { clip-path: none !important; }
+.is-exporting .card-type--evidence::after { display: none !important; }
+
+/* Card type shapes — survive export and focus dimming */
+.card-type--evidence::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 14px 14px 0;
+  border-color: transparent #e2e8f0 transparent transparent;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.export-badge {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 0 12px 0 8px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  z-index: 10;
+  pointer-events: none;
+  line-height: 18px;
+  text-align: center;
+}
+.export-badge::before {
+  content: attr(data-number);
+}
+.is-exporting-with-appendix .export-badge {
+  display: flex;
+}
